@@ -1,0 +1,53 @@
+# PODE Framework — Python Dependencies
+# Tested with: Python 3.12.12 (conda env: ricDL)
+# Hardware: NVIDIA GPU with CUDA 12.x (tested on RTX 5090)
+#
+# Install all at once:
+#   pip install -r requirements.txt
+#
+# Or recreate the conda environment:
+#   conda create -n PODE python=3.12
+#   conda activate PODE
+#   pip install -r requirements.txt
+
+# ── Core Deep Learning ──────────────────────────────────────────────
+torch==2.9.1
+torchvision==0.24.1
+timm==1.0.24
+
+# ── Scientific Computing ────────────────────────────────────────────
+numpy==2.2.6
+scipy==1.17.0
+pandas==2.3.3
+
+# ── Machine Learning ────────────────────────────────────────────────
+scikit-learn==1.8.0
+xgboost==3.2.0
+shap==0.51.0
+statsmodels==0.14.6
+
+# ── Visualization ───────────────────────────────────────────────────
+matplotlib==3.10.8
+seaborn==0.13.2
+opencv-python==4.12.0.88
+
+# ── Dimensionality Reduction ─────────────────────────────────────────
+umap-learn==0.5.11
+
+# ── Image Processing ────────────────────────────────────────────────
+Pillow==12.1.0
+
+# ── Data I/O ────────────────────────────────────────────────────────
+openpyxl==3.1.5       # read/write .xlsx files
+lxml==6.0.2           # optional xlsx acceleration
+
+# ── Training Utilities ──────────────────────────────────────────────
+tqdm==4.67.1
+tensorboard==2.20.0   # PODE-Splitter training logs (optional)
+
+# ── GradCAM (optional, for visualization only) ──────────────────────
+grad-cam==1.5.5
+
+# ── Interactive UMAP Explorer (optional) ────────────────────────────
+streamlit==1.53.0     # for pode_splitter/prediction_analysis/umap_3D_app.py
+plotly==6.5.2
