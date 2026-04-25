@@ -54,3 +54,10 @@ Thumbs.db
 *.zip
 *.tar.gz
 *.tar
+
+# Allow docs images
+!docs/
+!docs/*.png
+!docs/*.jpg
+!docs/*.svg
+!docs/*.gif
