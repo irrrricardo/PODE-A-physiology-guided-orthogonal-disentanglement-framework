@@ -162,8 +162,8 @@ python PODE/pode_mapper/xgboost_shap/xgboost_shap_analysis.py
 | Model | Description | Download |
 |---|---|---|
 | `VFM_Fundus_weights.pth` | VisionFM backbone (MAE pre-trained on 3.4M ophthalmic images) | [VisionFM](https://doi.org/10.1056/AIoa2300221) |
-| `best_model_dp.pth` | PODE-Base fine-tuned weights (MAE = 2.48 yr) | Coming soon |
-| `best_model_v2.pth` | PODE-Splitter weights | Coming soon |
+| `FundusAge_Base.pth` | PODE-Base fine-tuned weights (MAE = 2.48 yr) | [Google Drive](https://drive.google.com/drive/folders/1xCvczsPFImMAYD1Bo79_ZE5hPl2w915g?usp=sharing) |
+| `FundusAge_Split.pth` | PODE-Splitter weights | [Google Drive](https://drive.google.com/drive/folders/1xCvczsPFImMAYD1Bo79_ZE5hPl2w915g?usp=sharing) |
 
 Place downloaded weights in your preferred directory and pass the path via `--model_path` / `--mae_weights_path`.
 
@@ -281,7 +281,7 @@ The training uses inverse-frequency weighted sampling across 10-year age bins to
 
 ```bash
 python -m PODE.pode_base.evaluation.evaluate \
-    --model_path    outputs/pode_base/best_model_dp.pth \
+    --model_path    outputs/pode_base/FundusAge_Base.pth \
     --manifest_path data/resized_manifest.csv \
     --output_dir    outputs/pode_base/eval \
     --split_to_evaluate test
@@ -309,7 +309,7 @@ Run PODE-Base inference on the clinical cohort, then merge with clinical indicat
 
 ```bash
 python -m PODE.pode_base.evaluation.evaluate \
-    --model_path    outputs/pode_base/best_model_dp.pth \
+    --model_path    outputs/pode_base/FundusAge_Base.pth \
     --manifest_path data/mixed_cohort_manifest.csv \
     --output_dir    outputs/mixed_cohort_eval
 
@@ -390,13 +390,13 @@ python -m PODE.pode_splitter.train \
     --image_col_right righteye_path \
     --age_col         Age \
     --teacher_age_col teacher_age \
-    --pretrained_age_model outputs/pode_base/best_model_dp.pth \
+    --pretrained_age_model outputs/pode_base/FundusAge_Base.pth \
     --output_dir       outputs/pode_splitter \
     --lambda_age_orth 1.0  --lambda_physio_orth 0.1 \
     --task_weights '{"hemodynamic":1.0,"metabolic":1.0,"renal":1.0,"hematologic":1.0,"immune":1.0}' \
     --stage1_epochs 5  --stage2_epochs 10  --stage3_epochs 15 \
     --batch_size 32    --enable_amp
-# Outputs: best_model_v2.pth, model_config_v2.pth, scaler_params.pth
+# Outputs: FundusAge_Split.pth, model_config_v2.pth, scaler_params.pth
 ```
 
 Training stages:
@@ -413,7 +413,7 @@ Training stages:
 # Fig. 5B: Performance on independent healthy subset
 python -m PODE.pode_splitter.prediction_analysis.run_pipeline \
     --data_path         data/full_age_02_healthy_subset.xlsx \
-    --model_path        outputs/pode_splitter/best_model_v2.pth \
+    --model_path        outputs/pode_splitter/FundusAge_Split.pth \
     --model_config_path outputs/pode_splitter/model_config_v2.pth \
     --output_dir        outputs/fig5b \
     --image_col_left lefteye_path  --image_col_right righteye_path  --age_col Age
@@ -421,7 +421,7 @@ python -m PODE.pode_splitter.prediction_analysis.run_pipeline \
 # Fig. 5C: Z-subspace orthogonality heatmap
 python -m PODE.pode_splitter.prediction_analysis.analyze_orthogonality \
     --data_path         data/full_age_02.xlsx \
-    --model_path        outputs/pode_splitter/best_model_v2.pth \
+    --model_path        outputs/pode_splitter/FundusAge_Split.pth \
     --model_config_path outputs/pode_splitter/model_config_v2.pth \
     --output_dir        outputs/fig5c \
     --image_col_left lefteye_path  --image_col_right righteye_path \
