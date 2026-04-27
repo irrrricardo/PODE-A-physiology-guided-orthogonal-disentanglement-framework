@@ -351,9 +351,23 @@ python -m PODE.pode_mapper.tabular_transformer.attention_analyze \
 **UMAP + K-means clustering** (Fig. 4)
 
 ```bash
-python PODE/pode_mapper/umap_clustering/generate_umap.py          # Fig. 4B
-python PODE/pode_mapper/umap_clustering/kmeans_clustering.py      # Fig. 4C + 4E data
-python PODE/pode_mapper/umap_clustering/silhouette_reliability.py # Fig. 4A + 4D
+# Fig. 4B: UMAP projection (coordinates saved to outputs/umap/umap_coordinates.csv)
+python PODE/pode_mapper/umap_clustering/generate_umap.py \
+    --data data/full_age_02.xlsx \
+    --output_dir outputs/umap
+
+# Fig. 4C + 4E: K-Means clustering on UMAP coordinates
+python PODE/pode_mapper/umap_clustering/kmeans_clustering.py \
+    --data      outputs/umap/umap_coordinates.csv \
+    --output_dir outputs/kmeans \
+    --n_clusters 18 \
+    --target_col delta_age
+
+# Fig. 4A + 4D: Silhouette analysis + ANOVA reliability validation
+python PODE/pode_mapper/umap_clustering/silhouette_reliability.py \
+    --data      outputs/umap/umap_coordinates.csv \
+    --output_dir outputs/kmeans_reliability \
+    --n_clusters 18
 ```
 
 **LOWESS trajectory analysis and Δage stratification** (Fig. 3 + Supp. Fig. 1)

@@ -57,7 +57,8 @@ def load_mae_weights(model, mae_weights_path):
 
     checkpoint = torch.load(mae_weights_path, map_location='cpu', weights_only=False)
 
-    # --- 1. Smart extraction of weight dictionary (this logic is good, keep unchanged) ---
+    # --- 1. Smart extraction of weight dictionary ---
+    # Priority order: student > teacher > model > state_dict > encoder > bare dict
     if 'student' in checkpoint:
         print("Found 'student' key in checkpoint, will use weights from this part.")
         weights = checkpoint['student']
@@ -67,24 +68,43 @@ def load_mae_weights(model, mae_weights_path):
     elif 'model' in checkpoint:
         print("Found 'model' key in checkpoint, will use weights from this part.")
         weights = checkpoint['model']
+    elif 'state_dict' in checkpoint:
+        # Common in PyTorch-Lightning, timm, and many other frameworks
+        print("Found 'state_dict' key in checkpoint, will use weights from this part.")
+        weights = checkpoint['state_dict']
+    elif 'encoder' in checkpoint:
+        # Some MAE implementations save the encoder separately
+        print("Found 'encoder' key in checkpoint, will use weights from this part.")
+        weights = checkpoint['encoder']
     else:
         print("Common nested keys not found, will try to load the entire file as weights directly.")
         weights = checkpoint
 
     # --- 2. Key fix: Robustly clean up weight key names ---
-    # We only care about weights belonging to the backbone
+    # Strip common prefixes used by different training frameworks, then check if
+    # the resulting key exists in the target ViT backbone state dict.
+    KNOWN_PREFIXES = [
+        'module.backbone.',   # DDP + backbone wrapper
+        'backbone.',          # generic backbone wrapper
+        'module.encoder.',    # DDP + encoder wrapper
+        'encoder.',           # MAE encoder-only saves
+        'module.base_model.', # DDP + HuggingFace-style wrapper
+        'base_model.',        # HuggingFace PEFT style
+        'module.vit.',        # DDP + our own PODE-Base format
+        'vit.',               # our own PODE-Base format (regression_head excluded)
+        'module.',            # plain DDP
+    ]
+
     cleaned_weights = {}
     for k, v in weights.items():
         new_key = k
-        # Remove possible prefixes in order, more precisely
-        if new_key.startswith('module.backbone.'):
-            new_key = new_key[len('module.backbone.'):]
-        elif new_key.startswith('backbone.'):
-            new_key = new_key[len('backbone.'):]
-        elif new_key.startswith('module.'):
-            new_key = new_key[len('module.'):]
+        # Try each prefix in order; stop at the first match
+        for prefix in KNOWN_PREFIXES:
+            if new_key.startswith(prefix):
+                new_key = new_key[len(prefix):]
+                break  # only strip one prefix layer
 
-        # As long as the processed key name exists in the target ViT model, we accept it
+        # Accept the key if it exists verbatim in the target ViT state dict
         if new_key in model.vit.state_dict():
             cleaned_weights[new_key] = v
 
